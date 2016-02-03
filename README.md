@@ -4,6 +4,8 @@ or testing in a "basic" setup
 
 Services
 sysserv (aka Sissy): - system service that checks for everything that is running
+**not started
+
 * Written in C or C++
  -) checks for connectivity + DNS and reports to a database
   - if down: run <this> script
@@ -43,18 +45,18 @@ changes an existing string in the update file
      revert -sets the conf file to use IGNORE_UPDATE=YES and will ignore the current update file and restart all services
      update - restart the services using the values from the base file PLUS the update file if one is available
 
-  ugent.conf - contains configuration settings. Any setting that is
-missing is assumed as NO
+  ugent.conf - contains configuration settings. Any setting that is missing is assumed as NO
+	Example:
+	   IGNORE_UPDATE=YES #ignores the update file when generating new conf files. This is set using "ugent state revert" or "ugent state update"
+	   WPA_SUPPLICATION_CONF=YES
+	   RACOON_CONF=YES
+	   SETKEY_CONF=YES
+	   KERBEROS_CONF=YES
+	   APPLICATION_CONF=YES
 
-#ignores the update file when generating new conf files. This is set using "ugent state revert" or "ugent state update"
-   IGNORE_UPDATE=YES 
-   WPA_SUPPLICATION_CONF=YES
-   RACOON_CONF=YES
-   SETKEY_CONF=YES
-   KERBEROS_CONF=YES
-   APPLICATION_CONF=YES
 
-collect (aka Colleen): data collection daemon. Also includes tracking
+#collect (aka Colleen): data collection daemon. Also includes tracking
+Not Started
 temp files for services.
 written in C
 
