@@ -1,8 +1,9 @@
 require "wpa_supp"
+require "LuaXml" 
 -- wpa_supp = require("wpa_supp") --RH, can't make this work either!!!
 
 -- import the LuaXML module as xml
-xml = require("LuaXML.LuaXml") 
+
 
 function Salutations()
 	io.write("Hello There\n")
@@ -14,7 +15,7 @@ end
 ---[[
 --RH - This is the block that doesn't work
 function XML()
-
+	
 	-- load XML data from file "test.xml" into local table xfile 
 	local xfile = xml.load("comp-parts.xml") 
 	-- search for substatement having the tag "scene" 
