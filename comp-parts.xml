@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<!doctype parts system "parts.dtd">
+<?xml-stylesheet type="text/css" href="xmlpartsstyle.css"?>
+<parts>
+   <title>computer parts</title>
+   <part>
+      <item icode="2324">motherboard</item>
+      <manufacturer>asus</manufacturer>
+      <model>p3b-f</model>
+      <cost> 123.00</cost>
+   </part>
+   <part>
+      <item icode="74210">video card</item>
+      <manufacturer>ati</manufacturer>
+      <model>all-in-wonder pro</model>
+      <cost> 160.00</cost>
+   </part>
+   <part>
+      <item icode="2345">sound card</item>
+      <manufacturer>creative labs</manufacturer>
+      <model>sound blaster live</model>
+      <cost> 80.00</cost>
+   </part>
+   <part>
+      <item icode="2324"> inch monitor</item>
+      <manufacturer>lg electronics</manufacturer>
+      <model> 995e</model>
+      <cost> 290.00</cost>
+   </part>
+</parts>
