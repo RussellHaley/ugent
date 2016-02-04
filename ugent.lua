@@ -9,6 +9,7 @@ function Salutations()
 	io.write("Hello There\n")
 	--wpa_supp:generate()
 	generate()
+	print("arg1",arg[1])
 	print("")
 end
 
