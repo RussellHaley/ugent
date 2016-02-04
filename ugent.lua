@@ -1,5 +1,5 @@
 require "wpa_supp"
-require "LuaXml" 
+xml = require('LuaXml')
 -- wpa_supp = require("wpa_supp") --RH, can't make this work either!!!
 
 -- import the LuaXML module as xml
@@ -28,7 +28,7 @@ function XML()
 	  
 	  print("mytag: ", xscene:tag())
 	  print("yourtag: ", xscene[2]:tag())
-	  print("yourvalue: ", xscene[2]:text())
+	  --#print("yourvalue: ", xscene[2]:text())
 	  
 	  print( xscene[1].icode, xscene[2])
 	  -- set attribute id
