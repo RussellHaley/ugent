@@ -4,44 +4,95 @@ xml = require('LuaXml')
 serialize = require("ser")
 file = require("file")
 
-EmptyFileName = "./ugent.empty.xml"
-BaseFileName = "./ugent.xml"
-UpdateFileName = "./ugent.update.xml"
+--[[
+EmptyFileName = "../etc/ugent/ugent.empty.xml"
+BaseFileName = "../etc/ugent/ugent.xml"
+UpdateFileName = "../etc/ugent/ugent.update.xml"
+--]]
+
+
+HashExtension = ".hash"
+XmlExtension = ".xml"
+TempExtension = ".tmp"
+ConfExtension = ".conf"
+
+BaseDir = "/usr/local/etc/ugent/"
+AppName = "ugent"
+ConfFileName = BaseDir..AppName..ConfExtension
+
+BaseFileName = BaseDir..AppName
+UpdateFileName = BaseDir..AppName.."update"
+EmptyFileName = BaseDir..AppName.."empty"
+
 
 
 function import()
 
-	
-	
-	
-  -- The key exists in the table.
+--[[
+1 - check for args
+2 - is it base or update?
+3 - rename old files (xml,hash)
+4 - create new file
+4 - create new file (xml,hash)
+5 - if base, remove any update file
+6 - remove old files
+--]]
 	
 	if #arg < 3 then 
 		print("Not enough arguments. See Help")
-		print("imports a configuration file and sets the check value. If base, the file is ugent.xml, then overrides the current file and clears the update file. If update then the file is ugent.update.xml then the base file is untouched and the update file is overwritten.")
 		return
 	end
 	
+	
 	if type(parameters["value_2"]) ~= "nil" then
-			if string.upper(parameters["value_2"]) ==  "BASE" then
-				dest = "ugent.xml"
-			elseif string.upper(parameters["value_2"]) ==  "UPDATE" then
-				dest = "ugent.update.xml"
-			end
+		if string.upper(parameters["value_2"]) ==  "BASE" then
+			dest = BaseFileName..XmlExtension
+			hash = BaseFileName..HashExtension
+		elseif string.upper(parameters["value_2"]) ==  "UPDATE" then
+			dest = UpdateFileName..XmlExtension
+			hash = UpdateFileName..HashExtension
+		else
+			print("Incorrect import directive. See Help.")
+			return
+		end
+		
 	
+		print("Creating tmp files")
+		file.move(dest,dest..TempExtension)
+		file.move(hash,hash..TempExtension)
+		
 		file.copy(parameters["value_3"], dest)
+		file.createhashfile(dest,hash)
+		print("Done. Removing Temp Files")
+		file.remove(dest..TempExtension)
+		file.remove(hash..TempExtension)		
+		print("Created", dest, "from", parameters["value_3"], "With a hash of", file.getmd5Hex(dest), "at".. os.date("%c", file.getlastmodified(dest)))
+		
 	else
-		print("it's nil")
-	end
-	
-	
+		print("No source file was included. See help")
+		return 
+	end	
 	
 end
 
+function CheckConf(item)
+	print(ConfFileName)
+	items=file.read(ConfFileName)
+	i = items:find(item)
+	if i then return true else return false end
+end
 
+function SetConf(item)
+
+end
 
 function configure()
 	print("re-creates the configuration file for the services specified.")
+	if CheckConf("IGNORE_UPDATE") then
+		print("No Update")
+	else
+		print("use update")
+	end
 end
 
 function set()
@@ -102,6 +153,7 @@ function LoadXml()
 	  xscene["id"] = "newId"
 	end 
 end
+
 
 
 

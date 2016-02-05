@@ -100,6 +100,55 @@ function file.remove(path)
   os.remove(path)
 end
 
+function file.getfilepath(path)
+ print("not implemented")
+end
+
+function file.getfilename(path)
+   i = path:find("/")
+  if i == nil then
+	return path:match("^.+\\(.+)$")
+  else
+	return path:match("^.+/(.+)$")
+  end
+end
+
+function file.getfileextension(path)
+  ext = path:match "[^.]+$"
+  if #ext==#url then 
+	return nil 
+  else 
+	return ext 
+  end  
+end
+
+function file.getlastmodified(path)
+	local f = io.popen("stat -c %Y testfile")
+	local last_modified = f:read()
+	f:close()
+end
+
+function file.getmd5Hex(path)
+	local content = file.read(path)
+	local md5 = require 'md5'
+	return md5.sumhexa(content) 
+end
+
+function file.getcrc32(path)
+  local CRC = require 'digest.crc32lua'
+  local content = open(path)  
+  return CRC.crc32(content)
+end
+
+function file.createhashfile(path,hashFileName)
+	print("path from file", path)
+	content = file.read(path)
+	local md5 = require 'md5'
+	local md5_as_hex   = md5.sumhexa(content)  
+	hashFile = io.open(hashFileName,'w')
+	hashFile:write(md5_as_hex)
+	hashFile:close()
+end
 -- ## Exports
 --
 -- Export `file` as a Lua module.
