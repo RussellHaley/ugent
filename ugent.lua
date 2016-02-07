@@ -77,9 +77,20 @@ end
 
 function CheckConf(item)
 	print(ConfFileName)
-	items=file.read(ConfFileName)
-	i = items:find(item)
-	if i then return true else return false end
+	conf=file.read(ConfFileName)
+	i = conf:find(item)
+	if i then 
+		--line = conf:match("everything from <item> to the end of the line")
+		matchPattern = ""..item..".*$"
+		print(matchPattern)
+		line = conf:match(matchPattern)
+		print("The Line:", line)
+		one, two = line:match("([^,]+),([^,]+)")
+		print(one,two)
+		return true 
+	else 
+		return false 
+	end
 end
 
 function SetConf(item)
@@ -89,7 +100,7 @@ end
 function configure()
 	print("re-creates the configuration file for the services specified.")
 	if CheckConf("IGNORE_UPDATE") then
-		print("No Update")
+		print("Use Base File")
 	else
 		print("use update")
 	end
@@ -116,21 +127,18 @@ function help()
 		end
 	else
 		local f = assert(io.open("README.md", "r"))
-		local t = f:read("*all")
-		print(t)
+		local readme = f:read("*all")
 		f:close()
+		i,e = readme:find("(Expanded)")
+		if i ~=nil then  
+			t = readme:sub(1,i-2)
+		else
+			t = readme
+		end
+		print(t)
+		
 	end
 end
-
-function Salutations()
-	io.write("Hello There\n")
-	--wpa_supp:generate()
-	generate()
-	print("arg1",arg[1])
-	print("")
-end
-
-
 
 function LoadXml()
 	
@@ -218,7 +226,11 @@ function ParseCommandLine()
 end
 
 ParseCommandLine()
-_G[string.lower (parameters.command)]()
+if type(_G[string.lower (parameters.command)]) ~= "nil" then
+	_G[string.lower (parameters.command)]()
+else
+	print("Bad command. Call \"ugent help\"")
+end
 
 
 

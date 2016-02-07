@@ -1,0 +1,39 @@
+features
+- engineering mode - a way to set everything up as for configuration
+or testing in a "basic" setup
+
+Services
+sysserv (aka Sissy): - system service that checks for everything that is running
+**not started
+
+* Written in C or C++
+ -) checks for connectivity + DNS and reports to a database
+  - if down: run <this> script
+ -) Check for kerberos ticket.
+  - if down: authenticate with <this> script
+ -) Checks for Racoon and ipsec-tools (setkey) running
+  - if down: run <this> script
+
+  
+  
+
+#collect (aka Colleen): data collection daemon. Also includes tracking
+Not Started
+temp files for services.
+written in C
+
+Datastores:
+  1) runtime values (runt): current running values as set by the sysserv
+   - readonly except by sysserv.
+   - key value store. Berkely, rocksdb ?
+   - System values, application values, ***debugging values
+   - avoid log files wherever possible
+  2) user/system settings (ugent.xml and ugent.update.xml) : Things
+that can be changed by a user. This application is called ugent
+   - how is this updated?
+    a) XML Configuration file OR
+    b) Settings page in a GUI --> Generated using XLST/xpath or whatever it's called
+  3) a) collect database - tracks what is in collect files. what has
+been delivered and what has not.
+      b) collect files - archive files. stored in the /usr/data/collect folder
+

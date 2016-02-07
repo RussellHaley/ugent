@@ -1,0 +1,10 @@
+#!/bin/bash
+
+#OPTS=...
+#/usr/local/bin/lua ./ugent.lua $OPTS
+
+if [ $# -eq 0 ]; then
+  echo "No arguments provided!"
+  exit 1
+fi
+lua ugent.lua "$@"
