@@ -1,12 +1,12 @@
-User Settings Agent (Ugent) Help
+#User Settings Agent (Ugent) Help
 
- Controls the running values for an embedded operating system. 
+ ###Controls the running values for an embedded operating system. 
  
-  ugent 
-	import [base|update] 
-	configure [-l]| [-s <service name>]|[-a]
-	set <xmlstring> 
-	state revert|update
+  ####ugent 
+	-**import** [base|update] 
+	-**configure** [-l]| [-s <service name>]|[-a]
+	-**set** <xmlstring> 
+	-**state** revert|update
 
 (Expanded)
 The User Settings Agent (aka ugent) Is an application that controls the running values for an embedded operating system. Settings are contained in an XML store and are converted to configuration files for the following systems:
@@ -17,21 +17,21 @@ The User Settings Agent (aka ugent) Is an application that controls the running 
   - Kerberos
   - Application Runtime values
   
-  Commands
+  ####Commands
   
-  import [base|update]
+  **import** [base|update]
 	Imports a configuration file and sets the MD5. If base, the file is ugent.xml, then overrides the current file and clears the update file. If update then the file is ugent.update.xml then the base file is untouched and the update file is overwritten.
 	
-  configure [-l]| [-s <service name>]|-a
+  **configure** [-l]| [-s <service name>]|-a
 	Re-creates the configuration file for the services specified. No arguments lists the help
 		-l lists all the services available
 		-s <service name> changes a single service file by name
 		-a changes all services
   
-  set <xmlstring> 
+  **set** <xmlstring> 
 	Updates the configuration by creating the named section if it is not present in the update file, or overwrites it if it does exist
   
-  state revert|update
+  **state** revert|update
 	sets ugent to restart services using the settings for the base file or use/renew the setting from the base + update file (changes a setting in sysserv). This command causes a restart of the system through a socket call to sysserv
      revert -sets the conf file to use IGNORE_UPDATE=YES and will ignore the current update file and restart all services
      update - restart the services using the values from the base file PLUS the update file if one is available
