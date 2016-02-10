@@ -3,10 +3,10 @@
 ###Controls the running values for an embedded operating system. 
  
 ####ugent 
-	-**import** [base|update] 
-	-**configure** [-l]| [-s <service name>]|[-a]
-	-**set** <xmlstring> 
-	-**state** revert|update
+-**import** [base|update] 
+-**configure** [-l]| [-s <service name>]|[-a]
+-**set** <xmlstring> 
+-**state** revert|update
 
 ###(Expanded)
 The User Settings Agent (aka ugent) Is an application that controls the running values for an embedded operating system. Settings are contained in an XML store and are converted to configuration files for the following systems:
