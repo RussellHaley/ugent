@@ -1,14 +1,14 @@
 #User Settings Agent (Ugent) Help
 
- ###Controls the running values for an embedded operating system. 
+###Controls the running values for an embedded operating system. 
  
-  ####ugent 
+####ugent 
 	-**import** [base|update] 
 	-**configure** [-l]| [-s <service name>]|[-a]
 	-**set** <xmlstring> 
 	-**state** revert|update
 
-(Expanded)
+###(Expanded)
 The User Settings Agent (aka ugent) Is an application that controls the running values for an embedded operating system. Settings are contained in an XML store and are converted to configuration files for the following systems:
  
   - wpa_supplicant
@@ -17,7 +17,7 @@ The User Settings Agent (aka ugent) Is an application that controls the running 
   - Kerberos
   - Application Runtime values
   
-  ####Commands
+####Commands
   
   **import** [base|update]
 	Imports a configuration file and sets the MD5. If base, the file is ugent.xml, then overrides the current file and clears the update file. If update then the file is ugent.update.xml then the base file is untouched and the update file is overwritten.
@@ -37,7 +37,7 @@ The User Settings Agent (aka ugent) Is an application that controls the running 
      update - restart the services using the values from the base file PLUS the update file if one is available
      
      
-  Conf file settings:
+####Conf File Settings:
   
 	#Ignores the update file when generating new conf files. This is set using "ugent state revert" or "ugent state update"
   	   IGNORE_UPDATE=YES 
@@ -48,7 +48,7 @@ The User Settings Agent (aka ugent) Is an application that controls the running 
 	   KERBEROS_CONF=YES
 	   APPLICATION_CONF=YES
 	   
-File Descriptions:
+####File Descriptions:
 	ugent.xml 		- Base ugent file. 
 	ugent.hash 		- MD5 hash. used to validate that the file hasn't been manually altered outside of the system control
 	ugent.update.xml 	- The non-base file. This file should be a modified copy of the ugent.xml file 
