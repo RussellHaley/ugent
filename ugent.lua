@@ -75,29 +75,83 @@ function import()
 	
 end
 
-function CheckConf(item)
-	print(ConfFileName)
+function CheckConf(item)	
 	conf=file.read(ConfFileName)
-	i = conf:find(item)
+	i,j = conf:find(item)
 	if i then 
-		--line = conf:match("everything from <item> to the end of the line")
-		matchPattern = ""..item..".*$"
-		print(matchPattern)
-		line = conf:match(matchPattern)
-		print("The Line:", line)
-		one, two = line:match("([^,]+),([^,]+)")
-		print(one,two)
-		return true 
+		--~ match everything from <item> to the end of the line"
+		--~ I can't make this work ???
+		--~ matchPattern = "^.*"..item..".*$"
+		--~ print(matchPattern)
+		--~ line = conf:match(matchPattern)
+		--~ print("The Line:", line)
+		--~ print("is not what I was looking for")
+		--~ one, two = line:match("([^,]+)=([^,]+)")
+		--~ print(one,two)
+		
+		--~Oh computer gods, please forgive me for this brutal hack...
+		enabled = conf:sub(j+2,j+4)
+		if enabled:upper() == "YES" then
+			return true 
+		else
+			return false
+		end		
 	else 
 		return false 
 	end
 end
 
-function SetConf(item)
+function SetConf(item,enabled)
 
+	
+	conf=file.read(ConfFileName)		
+	i,j = conf:find(item)
+	if i then 
+
+		if enabled=="YES" then 
+
+			conf = conf:gsub(item.."=NO", item.."=YES", 1)
+
+		elseif enabled=="NO" then
+
+			conf = conf:gsub(item.."=YES", item.."=NO", 1)
+
+		end
+	else
+	
+		if conf:sub(#conf, 1) == "\n" then 
+			conf = conf.."\n"
+		end
+
+		conf = conf..item
+		if enabled=="YES" then 
+			conf = conf.."=YES"
+			
+		elseif enabled == "NO" 	then
+			conf = conf.."=NO"
+		end
+		conf = conf.."\n"
+	end
+	file.write(ConfFileName,conf)
+end
+
+function set()
+	item = arg[2]:upper()
+	enabled = arg[3]:upper()
+	
+	print(item,enabled)
+	SetConf(item,enabled)
 end
 
 function configure()
+	--[[
+		- Check command line parameters for a list of files to generate
+		- Check the configuration file if IGNORE_UDPATE
+		- call the correct function for the configuration item. 
+			* are functions in this file or in other files? How do I 
+			call other files cleanly?
+			
+	--]]
 	print("re-creates the configuration file for the services specified.")
 	if CheckConf("IGNORE_UPDATE") then
 		print("Use Base File")
@@ -106,9 +160,7 @@ function configure()
 	end
 end
 
-function set()
-	print("imports a string or changes an existing string in the update file ")
-end
+
 
 function state()
 	if string.upper(parameters.value_2) == "REVERT" then
@@ -132,7 +184,7 @@ function help()
 		i,e = readme:find("(Expanded)")
 		if i ~=nil then  
 			t = readme:sub(1,i-2)
-		else
+		elseif arg[2] == "-v" then
 			t = readme
 		end
 		print(t)
@@ -162,16 +214,6 @@ function LoadXml()
 	end 
 end
 
-
-
-
---Parse the Arguments from the command line:
-function PrintNames()
-	names = {'John', 'Joe', 'Steve'}
-	for i, name in ipairs(names) do
-	  print (name)
-	end
-end
 
 --UgentFunctions = {HELP = help, IMPORT = import, CONFIGURE = configure, SET = set, STATE = state, SAL = Salutations, XML = LoadXml, NAMES = PrintNames}
 
@@ -231,6 +273,3 @@ if type(_G[string.lower (parameters.command)]) ~= "nil" then
 else
 	print("Bad command. Call \"ugent help\"")
 end
-
-
-
