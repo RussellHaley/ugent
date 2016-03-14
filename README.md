@@ -55,3 +55,9 @@ The User Settings Agent (aka ugent) Is an application that controls the running 
 	ugent.update.hash	- MD5 has. Used to validate the udpate file
 	ugent.empty.xml	- An empty ugent file that contains all the possible settings this instances version of hte applicaiton
 	ugent.<name>,xml	- User specified files. Can contain anything and not controlled by the system, but can be used to udpate conf files
+
+####External Dependancies
+	md5.lua - https://github.com/kikito/md5.lua
+	ser.lua - https://github.com/gvx/Ser. Depreciated. I forked it to https://github.com/RussellHaley/Ser
+	file.lua - https://github.com/gummesson/file.lua
+	

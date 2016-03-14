@@ -16,8 +16,8 @@ XmlExtension = ".xml"
 TempExtension = ".tmp"
 ConfExtension = ".conf"
 
-BaseDir = "/usr/local/etc/ugent/"
-AppName = "ugent"
+BaseDir = "./"
+AppName = "ugent."
 ConfFileName = BaseDir..AppName..ConfExtension
 
 BaseFileName = BaseDir..AppName
@@ -25,7 +25,9 @@ UpdateFileName = BaseDir..AppName.."update"
 EmptyFileName = BaseDir..AppName.."empty"
 
 
-
+--[[
+Parameters: BASE|UPDATE <source-filename>
+--]]
 function import()
 
 --[[
@@ -192,32 +194,39 @@ function help()
 	end
 end
 
-function LoadXml()
+function loadxml()
 	
-	-- load XML data from file "test.xml" into local table xfile 
-	local xfile = xml.load("comp-parts.xml") 
-	-- search for substatement having the tag "scene" 
-	local xscene = xfile:find("part") 
-	-- if this substatement is found... 
-	if xscene ~= nil then 
-	  -- ...print it to screen
-	  print(xscene)
-	  -- print attribute id and first substatement
-	  
-	  print("mytag: ", xscene:tag())
-	  print("yourtag: ", xscene[2]:tag())
-	  --#print("yourvalue: ", xscene[2]:text())
-	  
-	  print( xscene[1].icode, xscene[2])
-	  -- set attribute id
-	  xscene["id"] = "newId"
-	end 
+  filename = "ugent.xml"
+  -- load XML data from file "test.xml" into local table xfile 
+  local xfile = xml.load(filename) 
+  -- search for substatement having the tag "scripts" 
+  local xscripts= xfile:find("scripts") 
+
+    --print(type(xscripts))
+    for i,v in ipairs(xscripts) do
+      
+      if file.exists(xscripts[i].dir)~=true then
+	  print("didn't find dir. creating...");
+	  os.execute("mkdir -p "..xscripts[i].dir)	      
+      end	    
+--      print(xscripts[i].dir.."/"..xscripts[i].name..xscripts[i][1])
+      file.write(xscripts[i].dir.."/"..xscripts[i].name,xscripts[i][1],"w")
+      --newfile.write(xscripts[i][1])
+      --newfile.close()	
+      --print(xscripts[i].dir.."/"..xscripts[i].name)
+      --print(xscripts[i][1])
+      
+    end
+    
+  -- set attribute id
+    --xscripts["id"] = "newId"
+
 end
 
 
 --UgentFunctions = {HELP = help, IMPORT = import, CONFIGURE = configure, SET = set, STATE = state, SAL = Salutations, XML = LoadXml, NAMES = PrintNames}
 
-if #arg < 1 then print("You must provide arguments to continue") return end
+--if #arg < 1 then print("You must provide arguments to continue") return end
 
 parameters = {}
 
