@@ -17,12 +17,12 @@ TempExtension = ".tmp"
 ConfExtension = ".conf"
 
 BaseDir = "./"
-AppName = "ugent."
+AppName = "ugent"
 ConfFileName = BaseDir..AppName..ConfExtension
 
 BaseFileName = BaseDir..AppName
-UpdateFileName = BaseDir..AppName.."update"
-EmptyFileName = BaseDir..AppName.."empty"
+UpdateFileName = BaseDir..AppName..".update"
+EmptyFileName = BaseDir..AppName..".empty"
 
 
 --[[
@@ -103,45 +103,29 @@ function CheckConf(item)
 	end
 end
 
-function SetConf(item,enabled)
-
-	
-	conf=file.read(ConfFileName)		
-	i,j = conf:find(item)
-	if i then 
-
-		if enabled=="YES" then 
-
-			conf = conf:gsub(item.."=NO", item.."=YES", 1)
-
-		elseif enabled=="NO" then
-
-			conf = conf:gsub(item.."=YES", item.."=NO", 1)
-
-		end
-	else
-	
-		if conf:sub(#conf, 1) == "\n" then 
-			conf = conf.."\n"
-		end
-
-		conf = conf..item
-		if enabled=="YES" then 
-			conf = conf.."=YES"
-			
-		elseif enabled == "NO" 	then
-			conf = conf.."=NO"
-		end
-		conf = conf.."\n"
-	end
-	file.write(ConfFileName,conf)
+function SetConf(item,value)
+--Read in the file and look for the "Item value	
+  conf=file.read(ConfFileName)		
+  i,j = conf:find(item)
+  if i then --if item is found   
+    --replace item=<anything> with item=value
+    conf = conf:gsub(item.."=.-[%\n|$]",item.."="..value.."\n")	  	  
+  else --item wasn't found 
+	  if conf:sub(#conf, 1) == "\n" then 
+	      conf = conf..item.."="..value
+	  else	
+	      conf = conf.."\n"..item.."="..value
+	  end
+  end
+  print(conf)
+  file.write(ConfFileName,conf)
 end
 
 function set()
 	item = arg[2]:upper()
 	enabled = arg[3]:upper()
 	
-	print(item,enabled)
+	--print(item,enabled)
 	SetConf(item,enabled)
 end
 
@@ -155,11 +139,37 @@ function configure()
 			
 	--]]
 	print("re-creates the configuration file for the services specified.")
+	
+	if type(parameters["value_2"]) ~= "nil" then
+		if string.upper(parameters["value_2"]) ==  "REVERT" then
+			print("REVERT YALL")
+			
+		elseif string.upper(parameters["value_2"]) ==  "UPDATE" then
+			print("LETS UPDATE")
+			
+		elseif string.upper(parameters["value_2"]) ==  "LIST" then
+			print("1","rc.conf")
+			print("2","wpa_supplicant.conf")
+			print("3","racoon.conf")
+			print("4","ipsec-tools.conf")
+			print("5","kerberos.conf")
+			print("6","app.conf")
+			
+		else
+			print("Sub command must be \"revert\", \"update\" or \"list\"")
+			return
+		end	
+		
+		
+	end
+	
+	--[[
 	if CheckConf("IGNORE_UPDATE") then
 		print("Use Base File")
 	else
 		print("use update")
 	end
+	--]]
 end
 
 
@@ -194,9 +204,8 @@ function help()
 	end
 end
 
-function loadxml()
+function loadxml(filename)
 	
-  filename = "ugent.xml"
   -- load XML data from file "test.xml" into local table xfile 
   local xfile = xml.load(filename) 
   -- search for substatement having the tag "scripts" 
@@ -221,6 +230,43 @@ function loadxml()
   -- set attribute id
     --xscripts["id"] = "newId"
 
+end
+
+function checkForConfType(typename)
+    local xfile = xml.load(xmlfilename) 
+    local xscripts= xfile:find("scripts") 
+    for i,v in ipairs(xscripts) do
+      if xscripts[i].name then
+	return true, xscripts[i].dir.."/"..xscripts[i].name,xscripts[i][1], xscripts[i][1]
+      end
+    end
+    return false
+end
+
+function chooseFileType(filetype)
+  
+  if filetype == 1 then -- rc.conf
+    
+  elseif filefype == 2 then --wpa_supplicant.conf
+    
+  elseif filefype == 3 then --racoon.conf
+  
+  elseif filefype == 4 then --ipsec-tools.conf
+  elseif filefype == 5 then -- kerberos.conf
+  elseif filefype == 6 then --app.conf
+  elseif filefype == 7 then
+  elseif filefype == 8 then
+  
+  
+    
+  end
+end
+
+function createConfFile(path, content,permissions)
+  --[[
+  1) check if exists
+  2) overwrite
+  --]]
 end
 
 
