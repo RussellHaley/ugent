@@ -109,6 +109,7 @@ function SetConf(item,value)
   i,j = conf:find(item)
   if i then --if item is found   
     --replace item=<anything> with item=value
+      -- THIS SUBSTITUTION DOESN"T WORK PROPERLY IT ONLY FINDS LINEFEED not the end of string
     conf = conf:gsub(item.."=.-[%\n|$]",item.."="..value.."\n")	  	  
   else --item wasn't found 
 	  if conf:sub(#conf, 1) == "\n" then 
@@ -130,58 +131,122 @@ function set()
 end
 
 function configure()
-	--[[
-		- Check command line parameters for a list of files to generate
-		- Check the configuration file if IGNORE_UDPATE
-		- call the correct function for the configuration item. 
-			* are functions in this file or in other files? How do I 
-			call other files cleanly?
-			
-	--]]
-	print("re-creates the configuration file for the services specified.")
-	
-	if type(parameters["value_2"]) ~= "nil" then
-		if string.upper(parameters["value_2"]) ==  "REVERT" then
-			print("REVERT YALL")
-			
-		elseif string.upper(parameters["value_2"]) ==  "UPDATE" then
-			print("LETS UPDATE")
-			
-		elseif string.upper(parameters["value_2"]) ==  "LIST" then
-			print("1","rc.conf")
-			print("2","wpa_supplicant.conf")
-			print("3","racoon.conf")
-			print("4","ipsec-tools.conf")
-			print("5","kerberos.conf")
-			print("6","app.conf")
-			
-		else
-			print("Sub command must be \"revert\", \"update\" or \"list\"")
-			return
-		end	
-		
-		
+  --[[
+  - Check command line parameters for a list of files to generate
+  - Check the configuration file if IGNORE_UDPATE
+  - call the correct function for the configuration item. 
+  * are functions in this file or in other files? How do I 
+  call other files cleanly?
+
+  --]]
+  print("re-creates the configuration file for the services specified.")
+
+  if type(parameters["value_2"]) ~= "nil" then
+    local subcommand = string.upper(parameters["value_2"])
+    local filename
+    if subcommand ==  "LIST" then
+      
+      local fileTypes = GetFileTypes(UpdateFileName..XmlExtension)
+      
+      for i,v in ipairs(fileTypes) do
+	print (i, v)
+      end
+      return 
+--       print("0","all")
+--       print("1","rc.conf")
+--       print("2","wpa_supplicant.conf")
+--       print("3","racoon.conf")
+--       print("4","ipsec-tools.conf")
+--       print("5","kerberos.conf")
+--       print("6","app.conf")
+    elseif subcommand ==  "UPDATE" then
+	filename = UpdateFileName..XmlExtension
+    elseif subcommand ==  "BASE" then
+	filename = BaseFileName..XmlExtension
+    else
+      print("Sub command must be \"revert\", \"update\" or \"list\"")
+      return 
+    end        
+    
+    if type(parameters["value_3"]) ~= nil then 
+      GenerateContent(filename, parameters["value_3"])
+    else
+	print("Configure requires three parameters please")			
+    end				  
+
+    
+  end
+  --[[
+  if CheckConf("IGNORE_UPDATE") then
+  print("Use Base File")
+  else
+  print("use update")
+  end
+  --]]
+end
+
+function GetScriptsElement(filename)
+  print("loading "..filename)
+  local xfile = xml.load(filename)
+  
+  if xfile ~= nil then
+    local scripts = xfile:find("scripts") 
+    
+    if scripts ~= nil then
+      return scripts
+    else
+      lua_error()
+    end
+  else
+    lua_error()
+  end
+end
+
+function GetFileTypes(filename)  
+    local scripts =  GetScriptsElement(filename)
+    local fileTypes = {}
+    for i in ipairs(scripts) do
+      fileTypes[#fileTypes+1] = scripts[i].name           
+    end      
+  return fileTypes
+end
+
+function GenerateContent(filename,contentName)
+  
+  local scripts = GetScriptsElement(filename) 
+  local gflag = false;
+    
+    for i in ipairs(scripts) do
+	if contentName:upper() == "ALL" then 
+	  gflag = true
+	elseif contentName:upper() == scripts[i].name:upper() then 
+	  gflag = true
 	end
 	
-	--[[
-	if CheckConf("IGNORE_UPDATE") then
-		print("Use Base File")
-	else
-		print("use update")
+	if gflag == true then
+	  if file.exists(scripts[i].dir)~=true then
+	      print("didn't find dir. creating...")
+	      os.execute("mkdir -p "..scripts[i].dir)	      
+	  end	
+	  file.write(scripts[i].dir.."/"..scripts[i].name, scripts[i][1],"w")
+	  print("Wrote file "..scripts[i].dir.."/"..scripts[i].name)
 	end
-	--]]
+	
+	gflag = false;
+    end
+
 end
 
 
 
 function state()
-	if string.upper(parameters.value_2) == "REVERT" then
-		print("found revert")
-	elseif string.upper(parameters.value_2) == "UPDATE" then
-		print("found update")
-	else
-		print("sets ugent to restart services using the settings for the base file or use/renew the setting from the base + update file (changes a setting in sysserv). This command causes a restart of the system through a socket call to sysserv ")
-	end
+  if string.upper(parameters.value_2) == "BASE" then
+	  print("found revert")
+  elseif string.upper(parameters.value_2) == "UPDATE" then
+	  print("found update")
+  else
+	  print("sets ugent to restart services using the settings for the base file or use/renew the setting from the base + update file (changes a setting in sysserv). This command causes a restart of the system through a socket call to sysserv ")
+  end
 end 
 
 function help()
@@ -204,34 +269,7 @@ function help()
 	end
 end
 
-function loadxml(filename)
-	
-  -- load XML data from file "test.xml" into local table xfile 
-  local xfile = xml.load(filename) 
-  -- search for substatement having the tag "scripts" 
-  local xscripts= xfile:find("scripts") 
-
-    --print(type(xscripts))
-    for i,v in ipairs(xscripts) do
-      
-      if file.exists(xscripts[i].dir)~=true then
-	  print("didn't find dir. creating...");
-	  os.execute("mkdir -p "..xscripts[i].dir)	      
-      end	    
---      print(xscripts[i].dir.."/"..xscripts[i].name..xscripts[i][1])
-      file.write(xscripts[i].dir.."/"..xscripts[i].name,xscripts[i][1],"w")
-      --newfile.write(xscripts[i][1])
-      --newfile.close()	
-      --print(xscripts[i].dir.."/"..xscripts[i].name)
-      --print(xscripts[i][1])
-      
-    end
-    
-  -- set attribute id
-    --xscripts["id"] = "newId"
-
-end
-
+--[[
 function checkForConfType(typename)
     local xfile = xml.load(xmlfilename) 
     local xscripts= xfile:find("scripts") 
@@ -241,37 +279,10 @@ function checkForConfType(typename)
       end
     end
     return false
-end
-
-function chooseFileType(filetype)
-  
-  if filetype == 1 then -- rc.conf
-    
-  elseif filefype == 2 then --wpa_supplicant.conf
-    
-  elseif filefype == 3 then --racoon.conf
-  
-  elseif filefype == 4 then --ipsec-tools.conf
-  elseif filefype == 5 then -- kerberos.conf
-  elseif filefype == 6 then --app.conf
-  elseif filefype == 7 then
-  elseif filefype == 8 then
-  
-  
-    
-  end
-end
-
-function createConfFile(path, content,permissions)
-  --[[
-  1) check if exists
-  2) overwrite
-  --]]
-end
+end]]
 
 
 --UgentFunctions = {HELP = help, IMPORT = import, CONFIGURE = configure, SET = set, STATE = state, SAL = Salutations, XML = LoadXml, NAMES = PrintNames}
-
 --if #arg < 1 then print("You must provide arguments to continue") return end
 
 parameters = {}
