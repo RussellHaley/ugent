@@ -24,9 +24,15 @@ BaseFileName = BaseDir..AppName
 UpdateFileName = BaseDir..AppName..".update"
 EmptyFileName = BaseDir..AppName..".empty"
 
+VERSION = 0.2
 
 --[[
+Imports the file into the ugent system. 
+If base is specified, then the base file is modified 
+If update is specified, the update file is  modified
 Parameters: BASE|UPDATE <source-filename>
+
+RH - Need to fix this to handle Own file name commands.
 --]]
 function import()
 
@@ -77,6 +83,10 @@ function import()
 	
 end
 
+--[[
+Search the conf file for a key and check if it's true or not.
+RH - This will need to be improved to allow for other values
+--]]
 function CheckConf(item)	
 	conf=file.read(ConfFileName)
 	i,j = conf:find(item)
@@ -103,6 +113,12 @@ function CheckConf(item)
 	end
 end
 
+
+--[[
+Writes values to the applications internal conf file. 
+RH - This has a bug. If there is no final \\n then the 
+Parsing doesn't always work. Need to improve the matching.
+--]]
 function SetConf(item,value)
 --Read in the file and look for the "Item value	
   conf=file.read(ConfFileName)		
@@ -130,6 +146,10 @@ function set()
 	SetConf(item,enabled)
 end
 
+
+--[[
+Configure creates is used to either UPDATE or REVERT configuration files.
+--]]
 function configure()
   --[[
   - Check command line parameters for a list of files to generate
@@ -139,7 +159,9 @@ function configure()
   call other files cleanly?
 
   --]]
-  print("re-creates the configuration file for the services specified.")
+  if checkfor("-verbose","-s") then
+    print("Re-creates the configuration file for the services specified.")
+  end 
 
   if type(parameters["value_2"]) ~= "nil" then
     local subcommand = string.upper(parameters["value_2"])
@@ -152,16 +174,9 @@ function configure()
 	print (i, v)
       end
       return 
---       print("0","all")
---       print("1","rc.conf")
---       print("2","wpa_supplicant.conf")
---       print("3","racoon.conf")
---       print("4","ipsec-tools.conf")
---       print("5","kerberos.conf")
---       print("6","app.conf")
     elseif subcommand ==  "UPDATE" then
 	filename = UpdateFileName..XmlExtension
-    elseif subcommand ==  "BASE" then
+    elseif subcommand ==  "REVERT" then
 	filename = BaseFileName..XmlExtension
     else
       print("Sub command must be \"revert\", \"update\" or \"list\"")
@@ -176,17 +191,18 @@ function configure()
 
     
   end
-  --[[
-  if CheckConf("IGNORE_UPDATE") then
-  print("Use Base File")
-  else
-  print("use update")
-  end
-  --]]
 end
 
+
+--[[
+Returns the scripts element from the specified XML file.
+The system assumes the XML file is valid and in the 
+expected format otherwise it blows up.
+--]]
 function GetScriptsElement(filename)
-  print("loading "..filename)
+  if checkfor("-verbose","-s") then
+    print("loading "..filename)
+  end
   local xfile = xml.load(filename)
   
   if xfile ~= nil then
@@ -202,6 +218,10 @@ function GetScriptsElement(filename)
   end
 end
 
+
+--[[
+gets a table of all the named elements in the XML file provided
+--]]
 function GetFileTypes(filename)  
     local scripts =  GetScriptsElement(filename)
     local fileTypes = {}
@@ -211,6 +231,11 @@ function GetFileTypes(filename)
   return fileTypes
 end
 
+--[[
+--filename: the XML file
+Reads an XML file and when a section name (contentName) is matched or equals 
+ALL, the function creates the new config file 
+--]]
 function GenerateContent(filename,contentName)
   
   local scripts = GetScriptsElement(filename) 
@@ -237,25 +262,19 @@ function GenerateContent(filename,contentName)
 
 end
 
-
-
-function state()
-  if string.upper(parameters.value_2) == "BASE" then
-	  print("found revert")
-  elseif string.upper(parameters.value_2) == "UPDATE" then
-	  print("found update")
-  else
-	  print("sets ugent to restart services using the settings for the base file or use/renew the setting from the base + update file (changes a setting in sysserv). This command causes a restart of the system through a socket call to sysserv ")
-  end
-end 
-
+--[[
+Prints the help or ugent help -c prints the changelog
+--]]
 function help()
 	if #arg > 1 then
 		if arg[2] == "-c" then
 			print "changelog"
+		elseif arg[2] == "-v" then
+		      print ("User Settings Agent v" .. VERSION)
 		end
+		
 	else
-		local f = assert(io.open("README.md", "r"))
+		local f = assert(io.open("help.txt", "r"))
 		local readme = f:read("*all")
 		f:close()
 		i,e = readme:find("(Expanded)")
@@ -269,24 +288,12 @@ function help()
 	end
 end
 
+
 --[[
-function checkForConfType(typename)
-    local xfile = xml.load(xmlfilename) 
-    local xscripts= xfile:find("scripts") 
-    for i,v in ipairs(xscripts) do
-      if xscripts[i].name then
-	return true, xscripts[i].dir.."/"..xscripts[i].name,xscripts[i][1], xscripts[i][1]
-      end
-    end
-    return false
-end]]
-
-
---UgentFunctions = {HELP = help, IMPORT = import, CONFIGURE = configure, SET = set, STATE = state, SAL = Salutations, XML = LoadXml, NAMES = PrintNames}
---if #arg < 1 then print("You must provide arguments to continue") return end
-
+March 27 2016 - The parsing is broken. parameters aren't added correclty.
+This needs an overhall or removal
+--]]
 parameters = {}
-
 function ParseCommandLine()
 	SkipNext = false
 	--Parse the command line
@@ -328,11 +335,34 @@ function ParseCommandLine()
 		end
 	end
 
-	print("Paramenter Count",#parameters)
-	print(serialize(parameters))
-	print("Command to execute:", parameters.command)
+	if checkfor("-verbose","-s") then
+	  print("Paramenter Count",#parameters)
+	  print(serialize(parameters))
+	  print("Command to execute:", parameters.command)
+	end
 end
 
+--[[
+Checks the command line arguments for a value.
+Doesn't use matching and it could.
+--]]
+function checkfor(val,altVal)
+   for i,v in ipairs(arg) do
+    if v == val or v == altVal then 
+      return true
+    end
+  end
+  return false
+end
+
+
+--[[
+Main()
+This section is equivelant to main. 
+We parse the command line and if the "command" is found 
+in the _G table (which lists all functions), it executes it. 
+This is native lua functionality.
+--]]
 ParseCommandLine()
 if type(_G[string.lower (parameters.command)]) ~= "nil" then
 	_G[string.lower (parameters.command)]()

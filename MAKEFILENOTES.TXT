@@ -1,0 +1,12 @@
+
+LuaXml: LuaXML_lib.c
+
+get from github
+install into ugent/work/LuaXml
+make
+copy LuaXML_lib.so, LuaXml.lua
+
+get ser.lua, md5.lua, file.lua, 
+
+
+
