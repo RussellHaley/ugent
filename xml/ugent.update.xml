@@ -14,7 +14,6 @@
 	<scripts>
 	  
 <script name="racoon.conf" dir="/tmp/exc/racoon" type="application/x-lua">
-  <![CDATA[
 #
 # NOTE: This file will not be used if you use racoon-tool(8) to manage your
 # IPsec connections. racoon-tool will process racoon-tool.conf(5) and
@@ -34,8 +33,8 @@
 # http://www.ipsec-howto.org/t1.html 
 #
 log notify;
-path pre_shared_key "/exc/racoon/psk.txt";
-#path certificate "/exc/racoon/certs";
+path pre_shared_key "/etc/racoon/psk.txt";
+#path certificate "/etc/racoon/certs";
 
 remote anonymous {
 exchange_mode main,aggressive;
@@ -62,16 +61,15 @@ compression_algorithm deflate;
 #        authentication_algorithm hmac_md5;
 #        compression_algorithm deflate;
 #}
-]]>
+
 
 </script>
 <script name="ipsec-tools.conf" dir="/tmp/exc" type="conf">
-   <![CDATA[
 #!/usr/sbin/setkey -f
 
 # NOTE: Do not use this file if you use racoon with racoon-tool
 # utility. racoon-tool will setup SAs and SPDs automatically using
-# /exc/racoon/racoon-tool.conf configuration.
+# /etc/racoon/racoon-tool.conf configuration.
 # 
 
 ## Flush the SAD and SPD
@@ -87,15 +85,13 @@ compression_algorithm deflate;
  spdadd 192.168.0.63 192.168.0.154 any -P in ipsec
     esp/transport//require;
 
-]]>
+
 </script>
 <script name="wpa_supplicant" dir="/tmp/exc" type="c-notation">
-  <![CDATA[
 network={
   ssid="Haleys"
   psk="LovelyBunchOfCoconuts"
 }
-]]>
 </script>
 	</scripts>
 	<resources>

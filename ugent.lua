@@ -87,30 +87,20 @@ end
 Search the conf file for a key and check if it's true or not.
 RH - This will need to be improved to allow for other values
 --]]
-function CheckConf(item)	
-	conf=file.read(ConfFileName)
-	i,j = conf:find(item)
-	if i then 
-		--~ match everything from <item> to the end of the line"
-		--~ I can't make this work ???
-		--~ matchPattern = "^.*"..item..".*$"
-		--~ print(matchPattern)
-		--~ line = conf:match(matchPattern)
-		--~ print("The Line:", line)
-		--~ print("is not what I was looking for")
-		--~ one, two = line:match("([^,]+)=([^,]+)")
-		--~ print(one,two)
-		
-		--~Oh computer gods, please forgive me for this brutal hack...
-		enabled = conf:sub(j+2,j+4)
-		if enabled:upper() == "YES" then
-			return true 
-		else
-			return false
-		end		
-	else 
-		return false 
-	end
+function GetValuesFromConf(file)
+  --if not file_exists(file) then return {} end
+  kvps = {}
+  for line in io.lines(file) do 
+    eqIndex = string.find(line,"=")
+    if eqIndex == 0 then
+      kvps[line]=true
+    else
+      kvps[line:sub(0,eqIndex - 1)]=line:sub(eqIndex+1)
+      --Need to test the value for Qoutes (Should they be removed?)
+      -- Need to test the value for yes/ok/true and no/notokay/false
+    end 
+  end
+  return kvps
 end
 
 

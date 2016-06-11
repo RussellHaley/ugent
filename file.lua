@@ -31,6 +31,15 @@ function file.exists(path)
   return file ~= nil
 end
 
+
+function file.directoryexists(path)
+  if type(path)~="string" then return false end
+  local cd = lfs.currentdir()
+  local is = lfs.chdir(path) and true or false
+  lfs.chdir(cd)
+  return is
+end
+
 -- ### file.read
 --
 -- Return the content of the file by reading the given `path` and `mode`.
@@ -101,37 +110,43 @@ function file.remove(path)
 end
 
 function file.getfilepath(path)
- print("not implemented")
+  print("not implemented")
 end
 
 function file.getfilename(path)
-   i = path:find("/")
+  i = path:find("/")
   if i == nil then
-	return path:match("^.+\\(.+)$")
+    return path:match("^.+\\(.+)$")
   else
-	return path:match("^.+/(.+)$")
+    return path:match("^.+/(.+)$")
   end
 end
 
 function file.getfileextension(path)
+
   ext = path:match "[^.]+$"
-  if #ext==#url then 
-	return nil 
-  else 
-	return ext 
-  end  
+  if(ext ~= nil) then
+    if #ext==#path then 
+      return nil 
+    else 
+      return ext 
+    end  
+  else
+    return nil
+  end
+
 end
 
 function file.getlastmodified(path)
-	local f = io.popen("stat -c %Y testfile")
-	local last_modified = f:read()
-	f:close()
+  local f = io.popen("stat -c %Y testfile")
+  local last_modified = f:read()
+  f:close()
 end
 
 function file.getmd5Hex(path)
-	local content = file.read(path)
-	local md5 = require 'md5'
-	return md5.sumhexa(content) 
+  local content = file.read(path)
+  local md5 = require 'md5'
+  return md5.sumhexa(content) 
 end
 
 function file.getcrc32(path)
@@ -141,13 +156,13 @@ function file.getcrc32(path)
 end
 
 function file.createhashfile(path,hashFileName)
-	print("path from file", path)
-	content = file.read(path)
-	local md5 = require 'md5'
-	local md5_as_hex   = md5.sumhexa(content)  
-	hashFile = io.open(hashFileName,'w')
-	hashFile:write(md5_as_hex)
-	hashFile:close()
+  print("path from file", path)
+  content = file.read(path)
+  local md5 = require 'md5'
+  local md5_as_hex   = md5.sumhexa(content)  
+  hashFile = io.open(hashFileName,'w')
+  hashFile:write(md5_as_hex)
+  hashFile:close()
 end
 -- ## Exports
 --
