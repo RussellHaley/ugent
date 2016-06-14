@@ -1,10 +1,28 @@
 sys = require("sys")
+thread = sys.thread
 serialize = require("ser")
 lfs = require("lfs")
 conf = require("Configuration")
 libFile = require("file")
 xml = require('LuaXml')
+log = require('log')
 
+
+  local function read_stdin()
+    while true do
+      local line = stdin:read("*l")
+      if line == 'quit\n' then
+        print("Worker:", "Notify controller")
+        worker:interrupt()
+        stdin:close(true)  -- Win32 workaround
+        assert(worker:wait() == -1)
+        evq:del(evid)
+      else
+        sys.stdout:write("Worker:\tInput: ", line)
+      end
+    end
+  end
+  
 local function on_change(evq, evid, path, ev)
   --print(evid,path,ev)    
 local ugentcommand = "sh ugent"
@@ -31,7 +49,7 @@ local ugentcommand = "sh ugent"
       end
 
       if file == watchfile then
-        print('egad we found it!')
+        
         os.execute("rm "..fullpath)  
       end
     end
@@ -44,7 +62,7 @@ end
 
 
 function containsUgentContent(filename)
-  local xfile = xml.load(filename)
+  local xfile = assert(xml.load(filename))
 
   if xfile ~= nil then
     local header = xfile:find("ugentXml") 
@@ -67,9 +85,29 @@ function Begin()
 
   watchpath = kvps["watchpath"]
   watchfile = kvps["watchfile"]
+  logfile = kvps["logfile"]
   evq = assert(sys.event_queue())
+  thread.init()
+  log.logfile = logfile
+  stdin = sys.stdin
+ 
+end
 
-  
+ --[[
+  This is where we check the timeout/error and decide if we wish to continue processing.
+  ]]--
+function Continue()
+   local _, err = pcall(read_stdin)
+    if err and not (thread.self():interrupted()
+        and err == thread.interrupt_error()) then
+      print("Error:", err)
+      err = nil
+    end
+    if not err then
+      error("Thread Interrupt Error expected")
+    end
+    print("Worker:", "Terminated")
+    return -1
 end
 
 
@@ -79,21 +117,17 @@ function Start()
   if libFile.directoryexists(watchpath) then 
     --RH: Need to test if the path exists, if not, create it
     assert(evq:add_dirwatch(watchpath, on_change, 1000000, false, true)) -->path, delegate, timeout,exit_on_event,updates only)
-
+    log.info('started')
   else
     print("The watchpath variable required in the conf file is either missing or not valid: ", watchpath)
 
   end
 
+  worker = assert(thread.run(Continue))
+    
 --Start the loop
   assert(evq:loop())
-end
-
- --[[
-  This is where we check the timeout/error and decide if we wish to continue processing.
-  ]]--
-function Continue()
- --Check any global errors, events etc. If okay, log and start up again. 
+    
 end
 
 function Stop()
@@ -109,5 +143,4 @@ end
 Begin()
 Start()
 Continue()
-Stop()
 End()
