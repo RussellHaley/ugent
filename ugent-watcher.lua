@@ -11,14 +11,16 @@ log = require('log')
   local function read_stdin()
     while true do
       local line = stdin:read("*l")
-      if line == 'quit\n' then
+      line = line:gsub("\n", "")
+      line = line:gsub("\r", "")
+      if line == 'quit' then
         print("Worker:", "Notify controller")
         worker:interrupt()
         stdin:close(true)  -- Win32 workaround
         assert(worker:wait() == -1)
-        evq:del(evid)
       else
-        sys.stdout:write("Worker:\tInput: ", line)
+        sys.stdout:write("Received: "..line.."\n")
+        sys.stdout:write("Type 'quit' to end.")
       end
     end
   end
@@ -36,7 +38,7 @@ local ugentcommand = "sh ugent"
         if extension == "xml" then
           if containsUgentContent(fullpath) then
             local command = ugentcommand.." import update "..fullpath
-            os.execute(command)
+            import_file(command)
           end
           print("found xml file")
         elseif extension == "xz" then
@@ -60,6 +62,17 @@ local ugentcommand = "sh ugent"
   --assert(evq:add_dirwatch(watchpath, on_change, 1000000, true, true))
 end
 
+
+function import_file(cmd, raw)
+  local f = assert(io.popen(cmd, 'r'))
+  local s = assert(f:read('*a'))
+  f:close()
+  if raw then return s end
+  s = string.gsub(s, '^%s+', '')
+  s = string.gsub(s, '%s+$', '')
+  s = string.gsub(s, '[\n\r]+', ' ')
+  return s
+end
 
 function containsUgentContent(filename)
   local xfile = assert(xml.load(filename))
@@ -97,6 +110,7 @@ end
   This is where we check the timeout/error and decide if we wish to continue processing.
   ]]--
 function Continue()
+  sys.stdout:write("Type 'quit' to end.\r\n")
    local _, err = pcall(read_stdin)
     if err and not (thread.self():interrupted()
         and err == thread.interrupt_error()) then
@@ -107,7 +121,9 @@ function Continue()
       error("Thread Interrupt Error expected")
     end
     print("Worker:", "Terminated")
+    Stop()
     return -1
+    
 end
 
 
@@ -132,6 +148,7 @@ end
 
 function Stop()
   evq:stop()
+  log.info('ended gracefully.')
 end 
 
 function End()
@@ -142,5 +159,5 @@ end
 
 Begin()
 Start()
-Continue()
+
 End()
